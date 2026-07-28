@@ -1,5 +1,5 @@
 # Desafios — API de Gestão Escolar
-
+-- primeiro commit
 Este é o **enunciado oficial** da entrega. Você recebeu um projeto em forma de
 **esqueleto**: os arquivos existem (`main.py`, `db.py`, `schemas.py`, ...) com
 comentários indicando **onde cada coisa vai**, mas **sem código pronto**. Sua
