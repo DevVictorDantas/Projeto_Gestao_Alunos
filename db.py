@@ -26,7 +26,7 @@ referência ao escrever criar_tabelas().
 #   import psycopg2
 #   from psycopg2.extras import RealDictCursor   # faz o banco devolver dict, não tupla
 #   from dotenv import load_dotenv               # lê o arquivo .env
-
+import psycopg2
 
 # TODO: carregue as variáveis do .env (load_dotenv) e monte um CONFIG lendo
 #       DB_HOST, DB_NAME, DB_USER, DB_PASSWORD (dica: os.getenv com um padrão).
