@@ -26,22 +26,64 @@ referência ao escrever criar_tabelas().
 #   import psycopg2
 #   from psycopg2.extras import RealDictCursor   # faz o banco devolver dict, não tupla
 #   from dotenv import load_dotenv               # lê o arquivo .env
+import os
 import psycopg2
-
+from psycopg2.extras import RealDictCursor
+from dotenv import load_dotenv
 # TODO: carregue as variáveis do .env (load_dotenv) e monte um CONFIG lendo
 #       DB_HOST, DB_NAME, DB_USER, DB_PASSWORD (dica: os.getenv com um padrão).
 
+load_dotenv() 
+
+CONFIG = {
+"DB_HOST": os.getenv("DB_HOST"),
+"DB_NAME": os.getenv("DB_NAME"),
+"DB_USER": os.getenv("DB_USER"),
+"DB_PASSWORD": os.getenv("DB_PASSWORD"),
+"DB_PORT": os.getenv("DB_PORT"),
+}
 
 # TODO: def conectar():
 #   Abra e devolva uma conexão psycopg2 usando o CONFIG.
 #   Dica: passe cursor_factory=RealDictCursor para as linhas virem como dicts.
-
+def conectar():
+  conexao = psycopg2.connect(
+    host = CONFIG["DB_HOST"],
+    database = CONFIG["DB_NAME"],
+    user = CONFIG["DB_USER"],
+    password = CONFIG["DB_PASSWORD"],
+    port = CONFIG["DB_PORT"],
+    cursor_factory=RealDictCursor
+  )
+  return conexao
 
 # TODO: def criar_tabelas():
 #   Crie as 3 tabelas com "CREATE TABLE IF NOT EXISTS ..." (veja esquema.sql).
 #   Esta função é chamada no startup da API (main.py).
+def criar_tabelas():
+  sql = """ CREATE TABLE IF NOT EXISTS alunos (
+    id        SERIAL PRIMARY KEY,
+    nome      VARCHAR(100) NOT NULL,
+    idade     INTEGER,
+    matricula VARCHAR(20) UNIQUE NOT NULL,
+    media     NUMERIC(4,2) DEFAULT 0
+  );
 
+    CREATE TABLE IF NOT EXISTS disciplinas (
+    id            SERIAL PRIMARY KEY,
+    nome          VARCHAR(100) NOT NULL UNIQUE,
+    carga_horaria INTEGER NOT NULL
+  );
 
+    CREATE TABLE IF NOT EXISTS matriculas (
+    id            SERIAL PRIMARY KEY,   
+    aluno_id      INTEGER REFERENCES alunos(id) ON DELETE CASCADE,
+    disciplina_id INTEGER REFERENCES disciplinas(id) ON DELETE CASCADE,
+    UNIQUE (aluno_id, disciplina_id)     -- mesma matrícula só uma vez
+  );"""
+  with psycopg2.connect(**CONFIG) as con, con.cursor() as cur:
+    cur.execute(sql)
+    con.commit()
 # --------------------------------------------------------------------------
 # CRUD de ALUNOS
 # --------------------------------------------------------------------------
