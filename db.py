@@ -57,6 +57,11 @@ def conectar():
   )
   return conexao
 
+def executar_sql(sql):
+  with psycopg2.connect(**CONFIG) as con, con.cursor() as cur:
+    cur.execute(sql)
+    con.commit()
+
 # TODO: def criar_tabelas():
 #   Crie as 3 tabelas com "CREATE TABLE IF NOT EXISTS ..." (veja esquema.sql).
 #   Esta função é chamada no startup da API (main.py).
@@ -81,27 +86,42 @@ def criar_tabelas():
     disciplina_id INTEGER REFERENCES disciplinas(id) ON DELETE CASCADE,
     UNIQUE (aluno_id, disciplina_id)     -- mesma matrícula só uma vez
   );"""
-  with psycopg2.connect(**CONFIG) as con, con.cursor() as cur:
-    cur.execute(sql)
-    con.commit()
+  executar_sql(sql)
 # --------------------------------------------------------------------------
 # CRUD de ALUNOS
 # --------------------------------------------------------------------------
 # TODO: inserir_aluno(nome, idade, matricula, media=0)
 #   INSERT na tabela alunos. Dica: use "RETURNING *" para já receber de volta
 #   a linha criada (com o id gerado pelo banco).
+
+def inserir_aluno(nome, idade, matricula, media=0):
+  sql = "INSERT INTO alunos (nome, idade, matricula, media=0) VALUES (%s, %s, %s, %s) RETURNING *"
+  executar_sql(sql)
 #
 # TODO: listar_alunos()
 #   SELECT de todos os alunos, ordenados por id.
 #   (Fazer aceitar filtros é o Desafio 1 — comece simples.)
-#
+
+def listar_alunos():
+  sql = "SELECT * FROM alunos ORDER BY id ASC"
+  executar_sql(sql)
+  
 # TODO: buscar_aluno(aluno_id)
 #   SELECT de um aluno por id. Devolva None se não existir.
-#
+
+def buscar_aluno(aluno_id):
+  sql = "SELECT * FROM alunos WHERE aluno_id = %s"
+  dados_aluno = (aluno_id) 
+  return aluno
+
+  executar_sql(sql, aluno_id)
+  
 # TODO: atualizar_aluno(aluno_id, **campos)
 #   UPDATE parcial: atualize só os campos recebidos. Dica: nomes de coluna
 #   podem entrar por f-string (são do seu código); VALORES vão com %s.
-#
+
+def atualizar_aluno(aluno_id,)
+
 # TODO: excluir_aluno(aluno_id)
 #   DELETE por id. Devolva True/False (dica: cur.rowcount > 0).
 

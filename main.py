@@ -16,11 +16,11 @@ E explore em: http://127.0.0.1:8000/docs
 """
 
 # DICA — o que você vai importar:
-#   from typing import List
-#   from fastapi import FastAPI, HTTPException, status
-#   from psycopg2.errors import UniqueViolation   # para tratar duplicidade
-#   import db
-#   from schemas import AlunoEntrada, AlunoAtualizacao, AlunoSaida  # e disciplinas
+from typing import List
+from fastapi import FastAPI, HTTPException, status
+from psycopg2.errors import UniqueViolation   # para tratar duplicidade
+import db
+from schemas import AlunoEntrada, AlunoAtualizacao, AlunoSaida  # e disciplinas
 
 
 # TODO: crie a aplicação -> app = FastAPI(title="Gestão de Alunos")
