@@ -36,11 +36,11 @@ from dotenv import load_dotenv
 load_dotenv() 
 
 CONFIG = {
-"DB_HOST": os.getenv("DB_HOST"),
-"DB_NAME": os.getenv("DB_NAME"),
-"DB_USER": os.getenv("DB_USER"),
-"DB_PASSWORD": os.getenv("DB_PASSWORD"),
-"DB_PORT": os.getenv("DB_PORT"),
+  "host": os.getenv("DB_HOST"),
+  "database": os.getenv("DB_NAME"),
+  "user": os.getenv("DB_USER"),
+  "password": os.getenv("DB_PASSWORD"),
+  "port": os.getenv("DB_PORT"),
 }
 
 # TODO: def conectar():
@@ -48,19 +48,32 @@ CONFIG = {
 #   Dica: passe cursor_factory=RealDictCursor para as linhas virem como dicts.
 def conectar():
   conexao = psycopg2.connect(
-    host = CONFIG["DB_HOST"],
-    database = CONFIG["DB_NAME"],
-    user = CONFIG["DB_USER"],
-    password = CONFIG["DB_PASSWORD"],
-    port = CONFIG["DB_PORT"],
+    host = CONFIG["host"],
+    database = CONFIG["name"],
+    user = CONFIG["user"],
+    password = CONFIG["password"],
+    port = CONFIG["port"],
     cursor_factory=RealDictCursor
   )
   return conexao
 
-def executar_sql(sql):
+def executar_sql(sql, params=None):
   with psycopg2.connect(**CONFIG) as con, con.cursor() as cur:
-    cur.execute(sql)
-    con.commit()
+    
+    sql_limpo = sql.strip().upper()    
+
+    if sql_limpo.startswith(("INSERT")):
+      cur.execute(sql, params)
+    else:
+      cur.execute(sql)
+    
+    if sql_limpo.startswith(("CREATE", "INSERT", "UPDATE", "DELETE", "DROP")):
+      con.commit()
+      return "Alteração realizada com sucesso"
+    else:
+      dados = cur.fetchall()
+      print("Os alunos são: ", dados)
+      return dados
 
 # TODO: def criar_tabelas():
 #   Crie as 3 tabelas com "CREATE TABLE IF NOT EXISTS ..." (veja esquema.sql).
@@ -87,6 +100,7 @@ def criar_tabelas():
     UNIQUE (aluno_id, disciplina_id)     -- mesma matrícula só uma vez
   );"""
   executar_sql(sql)
+
 # --------------------------------------------------------------------------
 # CRUD de ALUNOS
 # --------------------------------------------------------------------------
@@ -95,8 +109,8 @@ def criar_tabelas():
 #   a linha criada (com o id gerado pelo banco).
 
 def inserir_aluno(nome, idade, matricula, media=0):
-  sql = "INSERT INTO alunos (nome, idade, matricula, media=0) VALUES (%s, %s, %s, %s) RETURNING *"
-  executar_sql(sql)
+  sql = "INSERT INTO alunos (nome, idade, matricula, media) VALUES (%s, %s, %s, %s) RETURNING *"
+  executar_sql(sql, (nome, idade, matricula, media))
 #
 # TODO: listar_alunos()
 #   SELECT de todos os alunos, ordenados por id.
@@ -120,7 +134,8 @@ def buscar_aluno(aluno_id):
 #   UPDATE parcial: atualize só os campos recebidos. Dica: nomes de coluna
 #   podem entrar por f-string (são do seu código); VALORES vão com %s.
 
-def atualizar_aluno(aluno_id,)
+#def atualizar_aluno(aluno_id):
+  
 
 # TODO: excluir_aluno(aluno_id)
 #   DELETE por id. Devolva True/False (dica: cur.rowcount > 0).
