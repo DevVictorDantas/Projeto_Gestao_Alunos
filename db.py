@@ -57,23 +57,21 @@ def conectar():
   )
   return conexao
 
-def executar_sql(sql, params=None):
+def executar_sql(sql, params=None, fetchone=False):
   with psycopg2.connect(**CONFIG) as con, con.cursor() as cur:
+    cur.execute(sql, params)
     
-    sql_limpo = sql.strip().upper()    
-
-    if sql_limpo.startswith(("INSERT")):
-      cur.execute(sql, params)
-    else:
-      cur.execute(sql)
+    sql_limpo = sql.strip().upper()
     
     if sql_limpo.startswith(("CREATE", "INSERT", "UPDATE", "DELETE", "DROP")):
       con.commit()
       return "Alteração realizada com sucesso"
+    
     else:
-      dados = cur.fetchall()
-      print("Os alunos são: ", dados)
-      return dados
+      if fetchone:
+          return  cur.fetchone()   
+      else:
+          return  cur.fetchall()
 
 # TODO: def criar_tabelas():
 #   Crie as 3 tabelas com "CREATE TABLE IF NOT EXISTS ..." (veja esquema.sql).
@@ -123,18 +121,19 @@ def listar_alunos():
 # TODO: buscar_aluno(aluno_id)
 #   SELECT de um aluno por id. Devolva None se não existir.
 
-def buscar_aluno(aluno_id):
-  sql = "SELECT * FROM alunos WHERE aluno_id = %s"
-  dados_aluno = (aluno_id) 
-  return aluno
-
-  executar_sql(sql, aluno_id)
+def buscar_aluno(id):
+  sql = "SELECT nome, idade, matricula FROM alunos WHERE id = %s"       
+  aluno = executar_sql(sql, (id,))
+  print(aluno)
   
 # TODO: atualizar_aluno(aluno_id, **campos)
 #   UPDATE parcial: atualize só os campos recebidos. Dica: nomes de coluna
 #   podem entrar por f-string (são do seu código); VALORES vão com %s.
 
-#def atualizar_aluno(aluno_id):
+def atualizar_aluno(id, params):
+  if not params:
+    return "Nenhum campo foi alterado"
+    
   
 
 # TODO: excluir_aluno(aluno_id)
