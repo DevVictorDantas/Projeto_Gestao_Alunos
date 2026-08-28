@@ -135,20 +135,13 @@ def buscar_aluno(id):
 #   UPDATE parcial: atualize só os campos recebidos. Dica: nomes de coluna
 #   podem entrar por f-string (são do seu código); VALORES vão com %s.
 
-<<<<<<< HEAD
-def atualizar_aluno(id, params):
-  if not params:
-    return "Nenhum dado foi alterado"
-    
-=======
 def atualizar_aluno(
   id: int, 
   nome: Optional[str] = None, 
   idade: Optional[int] = None, 
   matricula: Optional[str] = None, 
   media: Optional[float] = None
-):  
->>>>>>> b9e3c43 (Finalizando a criacao das funcoes do arquivo db.py)
+  ):  
   
   campos_atualizados = {
     "nome": nome,
