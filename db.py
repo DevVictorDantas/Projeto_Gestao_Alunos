@@ -28,6 +28,7 @@ referência ao escrever criar_tabelas().
 #   from dotenv import load_dotenv               # lê o arquivo .env
 import os
 import psycopg2
+from typing import Optional
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 # TODO: carregue as variáveis do .env (load_dotenv) e monte um CONFIG lendo
