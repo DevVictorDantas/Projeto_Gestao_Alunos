@@ -60,7 +60,6 @@ def conectar():
 def executar_sql(sql, params=None, fetchone=False):
   with psycopg2.connect(**CONFIG) as con, con.cursor() as cur:
     cur.execute(sql, params)
-    
     sql_limpo = sql.strip().upper()
     
     if sql_limpo.startswith(("CREATE", "INSERT", "UPDATE", "DELETE", "DROP")):
@@ -132,7 +131,7 @@ def buscar_aluno(id):
 
 def atualizar_aluno(id, params):
   if not params:
-    return "Nenhum campo foi alterado"
+    return "Nenhum dado foi alterado"
     
   
 
