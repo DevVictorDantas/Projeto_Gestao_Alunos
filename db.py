@@ -64,6 +64,10 @@ def executar_sql(sql, params=None, fetchone=False):
     
     if sql_limpo.startswith(("CREATE", "INSERT", "UPDATE", "DELETE", "DROP")):
       con.commit()
+      
+      if sql_limpo.startswith("DELETE"):
+        return cur.rowcount > 0
+      
       return "Alteração realizada com sucesso"
     
     else:
@@ -71,6 +75,7 @@ def executar_sql(sql, params=None, fetchone=False):
           return  cur.fetchone()   
       else:
           return  cur.fetchall()
+    
 
 # TODO: def criar_tabelas():
 #   Crie as 3 tabelas com "CREATE TABLE IF NOT EXISTS ..." (veja esquema.sql).
@@ -115,36 +120,112 @@ def inserir_aluno(nome, idade, matricula, media=0):
 
 def listar_alunos():
   sql = "SELECT * FROM alunos ORDER BY id ASC"
-  executar_sql(sql)
+  lista_alunos = executar_sql(sql)
+  print(lista_alunos)
   
 # TODO: buscar_aluno(aluno_id)
 #   SELECT de um aluno por id. Devolva None se não existir.
 
 def buscar_aluno(id):
-  sql = "SELECT nome, idade, matricula FROM alunos WHERE id = %s"       
+  sql = "SELECT nome, idade, matricula FROM alunos WHERE id = %s;"       
   aluno = executar_sql(sql, (id,))
   print(aluno)
   
-# TODO: atualizar_aluno(aluno_id, **campos)
+# TODO: atualizar_aluno(id, **campos)
 #   UPDATE parcial: atualize só os campos recebidos. Dica: nomes de coluna
 #   podem entrar por f-string (são do seu código); VALORES vão com %s.
 
+<<<<<<< HEAD
 def atualizar_aluno(id, params):
   if not params:
     return "Nenhum dado foi alterado"
     
+=======
+def atualizar_aluno(
+  id: int, 
+  nome: Optional[str] = None, 
+  idade: Optional[int] = None, 
+  matricula: Optional[str] = None, 
+  media: Optional[float] = None
+):  
+>>>>>>> b9e3c43 (Finalizando a criacao das funcoes do arquivo db.py)
   
+  campos_atualizados = {
+    "nome": nome,
+    "idade": idade,
+    "matricula": matricula,
+    "media": media
+  }
+  
+  campos_validos = {k: v for k, v in campos_atualizados.items() if v is not None}
+  if not campos_validos:
+    print("Nenhuma informação do aluno foi alterada")
+    return False
+  
+  partes = [f"{campo} = %s" for campo in campos_validos.keys()]
+  partes_sql = ", ".join(partes)
+  
+  sql = f"UPDATE alunos SET {partes_sql} WHERE id= %s;"
+  
+  entrada = list(campos_validos.values()) + [id]
+  
+  executar_sql(sql, entrada)
 
-# TODO: excluir_aluno(aluno_id)
+# TODO: excluir_aluno(id)
 #   DELETE por id. Devolva True/False (dica: cur.rowcount > 0).
 
+def excluir_aluno(id):
+  sql = "DELETE FROM alunos WHERE id = %s;"
+  executar_sql(sql, (id,))
+  
 
 # --------------------------------------------------------------------------
 # CRUD de DISCIPLINAS  (Desafio 2)
 # --------------------------------------------------------------------------
 # TODO: inserir_disciplina, listar_disciplinas, buscar_disciplina,
 #       excluir_disciplina — espelhando o CRUD de alunos.
-
+def inserir_disciplina(nome, carga_horaria):
+  sql = "INSERT INTO disciplinas (nome, carga_horaria) VALUES (%s, %s);"
+  executar_sql(sql, (nome, carga_horaria))
+  
+def listar_disciplinas():
+  sql = "SELECT * FROM disciplinas ORDER BY id ASC"
+  lista_disciplinas = executar_sql(sql)
+  print(lista_disciplinas)
+  
+def buscar_disciplina(id):
+  sql = "SELECT nome, carga_horaria FROM disciplinas WHERE id = %s"       
+  disciplina = executar_sql(sql, (id,))
+  print(disciplina)
+  
+def atualizar_disciplina(
+  id: int, 
+  nome: Optional[str] = None, 
+  carga_horaria: Optional[int] = None
+):  
+  
+  campos_atualizados = {
+    "nome": nome,
+    "carga": carga_horaria
+  }
+  
+  campos_validos = {k: v for k, v in campos_atualizados.items() if v is not None}
+  if not campos_validos:
+    print("Nenhuma informação do aluno foi alterada")
+    return False
+  
+  partes = [f"{campo} = %s" for campo in campos_validos.keys()]
+  partes_sql = ", ".join(partes)
+  
+  sql = f"UPDATE disciplinas SET {partes_sql} WHERE id= %s;"
+  
+  entrada = list(campos_validos.values()) + [id]
+  
+  executar_sql(sql, entrada)  
+  
+def excluir_disciplina(id):
+  sql = "DELETE FROM disciplinas WHERE id = %s;"
+  executar_sql(sql, (id,))
 
 # --------------------------------------------------------------------------
 # MATRÍCULAS — relacionamento aluno <-> disciplina  (Desafio 3)
@@ -153,6 +234,14 @@ def atualizar_aluno(id, params):
 #   INSERT na tabela matriculas. Dica: "ON CONFLICT DO NOTHING" evita erro se
 #   a matrícula já existir.
 #
+def matricular_aluno(aluno_id, disciplina_id):
+  sql = "INSERT INTO matriculas (aluno_id, disciplina_id) VALUES (%s, %s) ON CONFLICT DO NOTHING;"
+  executar_sql(sql, (aluno_id, disciplina_id))
+  
 # TODO: disciplinas_do_aluno(aluno_id)
 #   Liste as disciplinas em que o aluno está matriculado. Dica: use JOIN entre
 #   disciplinas e matriculas.
+def disciplinas_do_aluno(aluno_id):
+  sql = "SELECT disciplinas.nome FROM matriculas JOIN disciplinas ON disciplinas.id = matriculas.disciplina_id WHERE matriculas.aluno_id = %s;"
+  disciplinas_matriculadas = executar_sql(sql, (aluno_id,))
+  print(disciplinas_matriculadas)
