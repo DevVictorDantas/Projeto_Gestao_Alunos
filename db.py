@@ -151,6 +151,7 @@ def atualizar_aluno(
     "media": media
   }
   
+  ## k transforma em nome da coluna, v transforma em valor do campo
   campos_validos = {k: v for k, v in campos_atualizados.items() if v is not None}
   if not campos_validos:
     print("Nenhuma informação do aluno foi alterada")
