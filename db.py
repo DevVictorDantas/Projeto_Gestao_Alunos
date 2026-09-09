@@ -122,16 +122,16 @@ def inserir_aluno(nome, idade, matricula, media=0):
 def listar_alunos():
   sql = "SELECT * FROM alunos ORDER BY id ASC"
   lista_alunos = executar_sql(sql)
-  print(lista_alunos)
-  
+  return lista_alunos
+
 # TODO: buscar_aluno(aluno_id)
 #   SELECT de um aluno por id. Devolva None se não existir.
 
 def buscar_aluno(id):
   sql = "SELECT nome, idade, matricula FROM alunos WHERE id = %s;"       
   aluno = executar_sql(sql, (id,))
-  print(aluno)
-  
+  return aluno
+
 # TODO: atualizar_aluno(id, **campos)
 #   UPDATE parcial: atualize só os campos recebidos. Dica: nomes de coluna
 #   podem entrar por f-string (são do seu código); VALORES vão com %s.
@@ -186,12 +186,10 @@ def inserir_disciplina(nome, carga_horaria):
 def listar_disciplinas():
   sql = "SELECT * FROM disciplinas ORDER BY id ASC"
   lista_disciplinas = executar_sql(sql)
-  print(lista_disciplinas)
   
 def buscar_disciplina(id):
   sql = "SELECT nome, carga_horaria FROM disciplinas WHERE id = %s"       
   disciplina = executar_sql(sql, (id,))
-  print(disciplina)
   
 def atualizar_disciplina(
   id: int, 
@@ -239,4 +237,3 @@ def matricular_aluno(aluno_id, disciplina_id):
 def disciplinas_do_aluno(aluno_id):
   sql = "SELECT disciplinas.nome FROM matriculas JOIN disciplinas ON disciplinas.id = matriculas.disciplina_id WHERE matriculas.aluno_id = %s;"
   disciplinas_matriculadas = executar_sql(sql, (aluno_id,))
-  print(disciplinas_matriculadas)

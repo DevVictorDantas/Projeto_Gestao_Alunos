@@ -18,20 +18,28 @@ E explore em: http://127.0.0.1:8000/docs
 # DICA — o que você vai importar:
 from typing import List
 from fastapi import FastAPI, HTTPException, status
+from fastapi.responses import RedirectResponse
 from psycopg2.errors import UniqueViolation   # para tratar duplicidade
 import db
-from schemas import AlunoEntrada, AlunoAtualizacao, AlunoSaida  # e disciplinas
+#from schemas import AlunoEntrada, AlunoAtualizacao, AlunoSaida  # e disciplinas
 
 
 # TODO: crie a aplicação -> app = FastAPI(title="Gestão de Alunos")
 #       (a variável PRECISA se chamar `app` — é o que o uvicorn procura.)
+app = FastAPI(title="Gestão de Alunos", version="0.1.0")
 
 # TODO: registre o startup para criar as tabelas:
 #   @app.on_event("startup")
 #   def ao_iniciar():
 #       db.criar_tabelas()
+@app.on_event("startup")
+def ao_iniciar():
+    db.criar_tabelas()
 
 # TODO: GET /  -> uma mensagem de boas-vindas (ex.: aponte para /docs).
+@app.get("/", include_in_schema=False)
+def redirecionar_docs():
+    return RedirectResponse(url="/docs")
 
 
 # ========================= ALUNOS =========================
@@ -47,7 +55,9 @@ from schemas import AlunoEntrada, AlunoAtualizacao, AlunoSaida  # e disciplinas
 #   DELETE /alunos/{id}       -> 204 No Content; 404 se não existir.
 #
 # Lembre: use response_model=AlunoSaida e status_code=status.HTTP_201_CREATED etc.
-
+@app.get("/alunos")
+def listar_alunos():
+    return db.listar_alunos()
 
 # ========================= DISCIPLINAS (Desafio 2) =========================
 # POST /disciplinas (201, 409 se duplicado) · GET /disciplinas (200) ·

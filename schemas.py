@@ -24,6 +24,11 @@ from pydantic import BaseModel, Field
 # TODO: AlunoEntrada  (POST) — campos: nome, idade, matricula, media (sem id)
 #   Dica: valide com Field, ex.: nome=Field(min_length=1, max_length=100),
 #   idade=Field(ge=0, le=120), media=Field(default=0, ge=0, le=10).
+class AlunoEntrada(BaseModel):
+    nome: str = Field(min_length=1, max_length=100)
+    idade: int = Field(ge=0, le=120)
+    matricula: str = Field(min_length=1, max_length=20)
+    media: Optional[float] = Field(default=0, ge=0, le=10)
 #
 # TODO: AlunoAtualizacao  (PATCH) — mesmos campos, mas TODOS Optional (=None),
 #   para o cliente enviar só o que quer mudar. (A matrícula não se altera.)
