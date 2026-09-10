@@ -62,3 +62,12 @@ class DisciplinaSaida(BaseModel):
     nome: str
     carga_horaria: int
     
+class UsuarioSaida(BaseModel):
+    id: int
+    nome: str
+    email: str
+    
+class UsuarioEntrada(BaseModel):
+    nome: str = Field(min_length=1, max_length=100)
+    email: str = Field(min_length=1, max_length=100)
+    senha: str = Field(min_length=8, max_length=72)

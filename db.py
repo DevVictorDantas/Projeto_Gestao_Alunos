@@ -106,7 +106,14 @@ def criar_tabelas():
     aluno_id      INTEGER REFERENCES alunos(id) ON DELETE CASCADE,
     disciplina_id INTEGER REFERENCES disciplinas(id) ON DELETE CASCADE,
     UNIQUE (aluno_id, disciplina_id)     -- mesma matrícula só uma vez
-  );"""
+  );
+
+    CREATE TABLE IF NOT EXISTS usuarios (
+      id SERIAL PRIMARY KEY,
+      nome VARCHAR(100) NOT NULL,
+      email VARCHAR(100) NOT NULL UNIQUE,
+      senha VARCHAR(100) NOT NULL
+    );"""
   executar_sql(sql)
 
 # --------------------------------------------------------------------------
@@ -252,3 +259,8 @@ def disciplinas_do_aluno(aluno_id):
   sql = "SELECT matriculas.disciplina_id AS id, disciplinas.nome, disciplinas.carga_horaria FROM matriculas JOIN disciplinas ON disciplinas.id = matriculas.disciplina_id WHERE matriculas.aluno_id = %s;"
   disciplinas_matriculadas = executar_sql(sql, (aluno_id,))
   return disciplinas_matriculadas
+
+def incluir_usuario(nome, email, senha):
+    sql = "INSERT INTO usuarios (nome, email, senha) VALUES (%s, %s, %s) RETURNING *;"
+    usuario_criado = executar_sql(sql, (nome, email, senha))
+    return usuario_criado
