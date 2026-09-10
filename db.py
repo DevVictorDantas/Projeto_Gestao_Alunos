@@ -59,17 +59,22 @@ def conectar():
   return conexao
 
 def executar_sql(sql, params=None, fetchone=False):
-  with psycopg2.connect(**CONFIG) as con, con.cursor() as cur:
+  with psycopg2.connect(**CONFIG) as con, con.cursor(cursor_factory=RealDictCursor) as cur:
     cur.execute(sql, params)
     sql_limpo = sql.strip().upper()
+    
+    if "RETURNING" in sql_limpo:
+      dados = cur.fetchone()
+      con.commit()
+      return dados
     
     if sql_limpo.startswith(("CREATE", "INSERT", "UPDATE", "DELETE", "DROP")):
       con.commit()
       
       if sql_limpo.startswith("DELETE"):
         return cur.rowcount > 0
-      
-      return "Alteração realizada com sucesso"
+      return "Alteração realizada com sucesso."
+         
     
     else:
       if fetchone:
@@ -112,9 +117,8 @@ def criar_tabelas():
 #   a linha criada (com o id gerado pelo banco).
 
 def inserir_aluno(nome, idade, matricula, media=0):
-  sql = "INSERT INTO alunos (nome, idade, matricula, media) VALUES (%s, %s, %s, %s) RETURNING *"
+  sql = "INSERT INTO alunos (nome, idade, matricula, media) VALUES (%s, %s, %s, %s) RETURNING id, nome, idade, matricula, media;"
   aluno_criado = executar_sql(sql, (nome, idade, matricula, media))
-  print(aluno_criado)
   return aluno_criado
 
 #
@@ -245,6 +249,6 @@ def matricular_aluno(aluno_id, disciplina_id):
 #   Liste as disciplinas em que o aluno está matriculado. Dica: use JOIN entre
 #   disciplinas e matriculas.
 def disciplinas_do_aluno(aluno_id):
-  sql = "SELECT disciplinas.nome FROM matriculas JOIN disciplinas ON disciplinas.id = matriculas.disciplina_id WHERE matriculas.aluno_id = %s;"
+  sql = "SELECT matriculas.disciplina_id AS id, disciplinas.nome, disciplinas.carga_horaria FROM matriculas JOIN disciplinas ON disciplinas.id = matriculas.disciplina_id WHERE matriculas.aluno_id = %s;"
   disciplinas_matriculadas = executar_sql(sql, (aluno_id,))
   return disciplinas_matriculadas

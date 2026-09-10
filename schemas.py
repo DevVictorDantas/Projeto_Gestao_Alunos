@@ -61,3 +61,4 @@ class DisciplinaSaida(BaseModel):
     id: int
     nome: str
     carga_horaria: int
+    

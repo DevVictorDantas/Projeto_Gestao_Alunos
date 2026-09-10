@@ -111,3 +111,17 @@ def criar_disciplina(disciplina: DisciplinaEntrada):
 #      -> 404 se aluno OU disciplina não existir; senão matricula.
 # GET  /alunos/{aluno_id}/disciplinas
 #      -> lista as disciplinas do aluno (usa db.disciplinas_do_aluno / JOIN).
+@app.post("/alunos/{aluno_id}/matricular/{disciplina_id}", status_code=status.HTTP_201_CREATED)
+def matricular_aluno(aluno_id: int, disciplina_id: int):
+    try:
+        db.matricular_aluno(aluno_id, disciplina_id)
+        return {"message": "Aluno matriculado com sucesso."}
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+@app.get("/alunos/{aluno_id}/disciplinas", response_model=List[DisciplinaSaida])
+def listar_disciplinas_do_aluno(aluno_id: int):
+    disciplinas = db.disciplinas_do_aluno(aluno_id)
+    if disciplinas is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Aluno não encontrado.")
+    return disciplinas
