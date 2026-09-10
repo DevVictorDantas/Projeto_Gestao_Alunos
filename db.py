@@ -113,7 +113,10 @@ def criar_tabelas():
 
 def inserir_aluno(nome, idade, matricula, media=0):
   sql = "INSERT INTO alunos (nome, idade, matricula, media) VALUES (%s, %s, %s, %s) RETURNING *"
-  executar_sql(sql, (nome, idade, matricula, media))
+  aluno_criado = executar_sql(sql, (nome, idade, matricula, media))
+  print(aluno_criado)
+  return aluno_criado
+
 #
 # TODO: listar_alunos()
 #   SELECT de todos os alunos, ordenados por id.
@@ -164,15 +167,16 @@ def atualizar_aluno(
   
   entrada = list(campos_validos.values()) + [id]
   
-  executar_sql(sql, entrada)
+  aluno_atualizado = executar_sql(sql, entrada)
+  return aluno_atualizado
 
 # TODO: excluir_aluno(id)
 #   DELETE por id. Devolva True/False (dica: cur.rowcount > 0).
 
 def excluir_aluno(id):
   sql = "DELETE FROM alunos WHERE id = %s;"
-  executar_sql(sql, (id,))
-  
+  aluno_excluido = executar_sql(sql, (id,))
+  return aluno_excluido
 
 # --------------------------------------------------------------------------
 # CRUD de DISCIPLINAS  (Desafio 2)
@@ -180,17 +184,20 @@ def excluir_aluno(id):
 # TODO: inserir_disciplina, listar_disciplinas, buscar_disciplina,
 #       excluir_disciplina — espelhando o CRUD de alunos.
 def inserir_disciplina(nome, carga_horaria):
-  sql = "INSERT INTO disciplinas (nome, carga_horaria) VALUES (%s, %s);"
-  executar_sql(sql, (nome, carga_horaria))
-  
+  sql = "INSERT INTO disciplinas (nome, carga_horaria) VALUES (%s, %s) RETURNING *;"
+  disciplina_criada = executar_sql(sql, (nome, carga_horaria))
+  return disciplina_criada
+
 def listar_disciplinas():
   sql = "SELECT * FROM disciplinas ORDER BY id ASC"
   lista_disciplinas = executar_sql(sql)
-  
+  return lista_disciplinas
+
 def buscar_disciplina(id):
   sql = "SELECT nome, carga_horaria FROM disciplinas WHERE id = %s"       
   disciplina = executar_sql(sql, (id,))
-  
+  return disciplina
+
 def atualizar_disciplina(
   id: int, 
   nome: Optional[str] = None, 
@@ -199,7 +206,7 @@ def atualizar_disciplina(
   
   campos_atualizados = {
     "nome": nome,
-    "carga": carga_horaria
+    "carga_horaria": carga_horaria
   }
   
   campos_validos = {k: v for k, v in campos_atualizados.items() if v is not None}
@@ -214,11 +221,13 @@ def atualizar_disciplina(
   
   entrada = list(campos_validos.values()) + [id]
   
-  executar_sql(sql, entrada)  
-  
+  disciplina_atualizada = executar_sql(sql, entrada)  
+  return disciplina_atualizada
+
 def excluir_disciplina(id):
   sql = "DELETE FROM disciplinas WHERE id = %s;"
-  executar_sql(sql, (id,))
+  disciplina_excluida = executar_sql(sql, (id,))
+  return disciplina_excluida
 
 # --------------------------------------------------------------------------
 # MATRÍCULAS — relacionamento aluno <-> disciplina  (Desafio 3)
@@ -229,11 +238,13 @@ def excluir_disciplina(id):
 #
 def matricular_aluno(aluno_id, disciplina_id):
   sql = "INSERT INTO matriculas (aluno_id, disciplina_id) VALUES (%s, %s) ON CONFLICT DO NOTHING;"
-  executar_sql(sql, (aluno_id, disciplina_id))
-  
+  aluno_matriculado = executar_sql(sql, (aluno_id, disciplina_id))
+  return aluno_matriculado
+
 # TODO: disciplinas_do_aluno(aluno_id)
 #   Liste as disciplinas em que o aluno está matriculado. Dica: use JOIN entre
 #   disciplinas e matriculas.
 def disciplinas_do_aluno(aluno_id):
   sql = "SELECT disciplinas.nome FROM matriculas JOIN disciplinas ON disciplinas.id = matriculas.disciplina_id WHERE matriculas.aluno_id = %s;"
   disciplinas_matriculadas = executar_sql(sql, (aluno_id,))
+  return disciplinas_matriculadas

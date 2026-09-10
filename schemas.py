@@ -32,12 +32,32 @@ class AlunoEntrada(BaseModel):
 #
 # TODO: AlunoAtualizacao  (PATCH) — mesmos campos, mas TODOS Optional (=None),
 #   para o cliente enviar só o que quer mudar. (A matrícula não se altera.)
+
+class AlunoAtualizacao(BaseModel):
+    nome: Optional[str] = Field(min_length=1, max_length=100)
+    idade: Optional[int] = Field(ge=0, le=120)
+    media: Optional[float] = Field(default=0, ge=0, le=10)
 #
 # TODO: AlunoSaida  — o que a API devolve, incluindo o id.
 
+class AlunoSaida(BaseModel):
+    id: int
+    nome: str
+    idade: int
+    matricula: str
+    media: float
 
 # --------------------------------------------------------------------------
 # DISCIPLINA  (Desafio 2)
 # --------------------------------------------------------------------------
 # TODO: DisciplinaEntrada (nome, carga_horaria) e DisciplinaSaida (id, nome,
 #   carga_horaria). Dica: carga_horaria=Field(gt=0) exige valor positivo.
+
+class DisciplinaEntrada(BaseModel):
+    nome: str = Field(min_length=1, max_length=100)
+    carga_horaria: int = Field(gt=0)
+
+class DisciplinaSaida(BaseModel):
+    id: int
+    nome: str
+    carga_horaria: int

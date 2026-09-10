@@ -21,7 +21,7 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import RedirectResponse
 from psycopg2.errors import UniqueViolation   # para tratar duplicidade
 import db
-#from schemas import AlunoEntrada, AlunoAtualizacao, AlunoSaida  # e disciplinas
+from schemas import AlunoEntrada, AlunoAtualizacao, AlunoSaida, DisciplinaEntrada, DisciplinaSaida
 
 
 # TODO: crie a aplicação -> app = FastAPI(title="Gestão de Alunos")
@@ -37,8 +37,8 @@ def ao_iniciar():
     db.criar_tabelas()
 
 # TODO: GET /  -> uma mensagem de boas-vindas (ex.: aponte para /docs).
-@app.get("/", include_in_schema=False)
-def redirecionar_docs():
+@app.get("/")
+def boas_vindas():
     return RedirectResponse(url="/docs")
 
 
@@ -55,13 +55,55 @@ def redirecionar_docs():
 #   DELETE /alunos/{id}       -> 204 No Content; 404 se não existir.
 #
 # Lembre: use response_model=AlunoSaida e status_code=status.HTTP_201_CREATED etc.
+@app.post("/alunos", status_code=status.HTTP_201_CREATED, response_model=AlunoSaida)
+def criar_aluno(aluno: AlunoEntrada):
+    try:
+        aluno_criado = db.inserir_aluno(**aluno.model_dump())
+        return aluno_criado
+    except UniqueViolation:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Matrícula duplicada.")
+
 @app.get("/alunos")
 def listar_alunos():
     return db.listar_alunos()
 
+@app.get("/alunos/{id}")
+def buscar_aluno(id: int):
+    aluno = db.buscar_aluno(id)
+    if aluno is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Aluno não encontrado.")
+    return aluno
+
+@app.patch("/alunos/{id}")
+def atualizar_aluno(id: int, aluno: AlunoAtualizacao):
+    campos_atualizados = aluno.model_dump(exclude_unset=True)
+    if not campos_atualizados:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Nenhum campo para atualizar.")
+    
+    aluno_atualizado = db.atualizar_aluno(id, **campos_atualizados)
+    if aluno_atualizado is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Aluno não encontrado.")
+    
+    return aluno_atualizado
+
+@app.delete("/alunos/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def excluir_aluno(id: int):
+    sucesso = db.excluir_aluno(id)
+    if not sucesso:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Aluno não encontrado.")
+    return None  # 204 No Content
+
 # ========================= DISCIPLINAS (Desafio 2) =========================
 # POST /disciplinas (201, 409 se duplicado) · GET /disciplinas (200) ·
 # DELETE /disciplinas/{id} (204, 404 se não existir).
+
+@app.post("/disciplinas", status_code=status.HTTP_201_CREATED, response_model=DisciplinaSaida)
+def criar_disciplina(disciplina: DisciplinaEntrada):
+    try:
+        disciplina_criada = db.inserir_disciplina(**disciplina.model_dump())
+        return disciplina_criada
+    except UniqueViolation:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Disciplina duplicada.")
 
 
 # ========================= MATRÍCULAS (Desafio 3) =========================
