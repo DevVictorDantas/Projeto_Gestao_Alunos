@@ -55,6 +55,9 @@ def boas_vindas():
 #   DELETE /alunos/{id}       -> 204 No Content; 404 se não existir.
 #
 # Lembre: use response_model=AlunoSaida e status_code=status.HTTP_201_CREATED etc.
+@app.get("/login")
+
+
 @app.post("/alunos", status_code=status.HTTP_201_CREATED, response_model=AlunoSaida)
 def criar_aluno(aluno: AlunoEntrada):
     try:

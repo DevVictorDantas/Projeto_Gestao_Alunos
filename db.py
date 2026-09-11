@@ -112,7 +112,8 @@ def criar_tabelas():
       id SERIAL PRIMARY KEY,
       nome VARCHAR(100) NOT NULL,
       email VARCHAR(100) NOT NULL UNIQUE,
-      senha_hash VARCHAR(100) NOT NULL
+      senha_hash VARCHAR(72) NOT NULL
+      criado_em TIMESTAMP NOT NULL DEFAULT NOW()
     );"""
   executar_sql(sql)
 
@@ -261,6 +262,11 @@ def disciplinas_do_aluno(aluno_id):
   return disciplinas_matriculadas
 
 def incluir_usuario(nome, email, senha):
-    sql = "INSERT INTO usuarios (nome, email, senha) VALUES (%s, %s, %s) RETURNING *;"
+    sql = "INSERT INTO usuarios (nome, email, senha) VALUES (%s, %s, %s) RETURNING nome, email;"
     usuario_criado = executar_sql(sql, (nome, email, senha))
     return usuario_criado
+
+def buscar_usuario_por_email(email):
+    sql = "SELECT * FROM usuarios WHERE email = %s;"
+    usuario = executar_sql(sql, (email,), fetchone=True)
+    return usuario
