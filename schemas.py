@@ -16,7 +16,8 @@ Boas práticas que você deve aplicar:
 # DICA — o que você vai importar:
 from typing import Optional
 from pydantic import BaseModel, Field
-
+from datetime import datetime
+from pydantic import EmailStr
 
 # --------------------------------------------------------------------------
 # ALUNO
@@ -64,10 +65,14 @@ class DisciplinaSaida(BaseModel):
     
 class UsuarioSaida(BaseModel):
     id: int
-    nome: str
-    email: str
+    email: EmailStr
+    criado_em: datetime
     
 class UsuarioEntrada(BaseModel):
-    nome: str = Field(min_length=1, max_length=100)
-    email: str = Field(min_length=1, max_length=100)
+    email: EmailStr
     senha: str = Field(min_length=8, max_length=72)
+    
+class LoginOk(BaseModel):
+    message: str
+    usuario: UsuarioSaida
+    

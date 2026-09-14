@@ -21,7 +21,8 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import RedirectResponse
 from psycopg2.errors import UniqueViolation   # para tratar duplicidade
 import db
-from schemas import AlunoEntrada, AlunoAtualizacao, AlunoSaida, DisciplinaEntrada, DisciplinaSaida
+from schemas import AlunoEntrada, AlunoAtualizacao, AlunoSaida, DisciplinaEntrada, DisciplinaSaida, UsuarioEntrada, UsuarioSaida, LoginOk
+import auth
 
 
 # TODO: crie a aplicação -> app = FastAPI(title="Gestão de Alunos")
@@ -55,8 +56,33 @@ def boas_vindas():
 #   DELETE /alunos/{id}       -> 204 No Content; 404 se não existir.
 #
 # Lembre: use response_model=AlunoSaida e status_code=status.HTTP_201_CREATED etc.
-@app.get("/login")
+@app.post("/registrar", response_model=UsuarioSaida, status_code=status.HTTP_201_CREATED)
+def registrar(usuario: UsuarioEntrada):
+    senha_hash = auth.gerar_hash(usuario.senha)
+    try:
+        usuario_criado = db.incluir_usuario(usuario.email, senha_hash)
+        return usuario_criado
+    except UniqueViolation:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email já registrado.")
 
+@app.get("/usuarios", response_model=List[UsuarioSaida])
+def listar_usuarios():
+    return db.listar_usuarios()    
+
+@app.post("/login", response_model=LoginOk)
+def login(dados: UsuarioEntrada):
+    usuario = db.buscar_usuario_por_email(dados.email)
+    
+    if usuario is None:
+        auth.conferir_senha(dados.senha, auth.HASH_FALSO)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuário ou senha inválidos.")
+    
+    if not auth.conferir_senha(dados.senha, usuario["senha_hash"]):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuário ou senha inválidos.")
+    
+    usuario_dict = dict(usuario)
+    usuario_dict.pop("senha_hash", None)  # Remover a senha do dicionário antes de retornar 
+    return {"message": "Login bem-sucedido", "usuario": usuario_dict}
 
 @app.post("/alunos", status_code=status.HTTP_201_CREATED, response_model=AlunoSaida)
 def criar_aluno(aluno: AlunoEntrada):
