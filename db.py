@@ -134,8 +134,20 @@ def inserir_aluno(nome, idade, matricula, media=0):
 #   (Fazer aceitar filtros é o Desafio 1 — comece simples.)
 
 def listar_alunos():
-  sql = "SELECT * FROM alunos ORDER BY id ASC"
-  lista_alunos = executar_sql(sql)
+  sql = "SELECT * FROM alunos"
+  condicoes = []
+  parametros = []
+  if idade is not None:
+    condicoes.append("idade >= %s")
+    parametros.append(idade)
+  if media is not None:
+    condicoes.append("media >= %s")
+    parametros.append(media)
+  if condicoes:
+    sql += " WHERE " + " AND ".join(condicoes)
+    
+  sql += " ORDER BY id ASC"
+  lista_alunos = executar_sql(sql, tuple(parametros))
   return lista_alunos
 
 # TODO: buscar_aluno(aluno_id)
