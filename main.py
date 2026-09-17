@@ -21,7 +21,7 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import RedirectResponse
 from psycopg2.errors import UniqueViolation   # para tratar duplicidade
 import db
-from schemas import AlunoEntrada, AlunoAtualizacao, AlunoSaida, DisciplinaEntrada, DisciplinaSaida, UsuarioEntrada, UsuarioSaida, LoginOk
+from schemas import AlunoEntrada, AlunoAtualizacao, AlunoSaida, DisciplinaEntrada, DisciplinaSaida, UsuarioEntrada, UsuarioSaida, LoginOk, nota, mediaSaida
 import auth
 
 
@@ -92,7 +92,7 @@ def criar_aluno(aluno: AlunoEntrada):
     except UniqueViolation:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Matrícula duplicada.")
 
-@app.get("/alunos")
+@app.get("/alunos", status_code=status.HTTP_200_OK)
 def listar_alunos():
     return db.listar_alunos()
 
@@ -133,7 +133,10 @@ def criar_disciplina(disciplina: DisciplinaEntrada):
         return disciplina_criada
     except UniqueViolation:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Disciplina duplicada.")
-
+    
+@app.get("/disciplinas")
+def listar_disciplinas():
+    return db.listar_disciplinas()
 
 # ========================= MATRÍCULAS (Desafio 3) =========================
 # POST /alunos/{aluno_id}/matricular/{disciplina_id}
@@ -154,3 +157,15 @@ def listar_disciplinas_do_aluno(aluno_id: int):
     if disciplinas is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Aluno não encontrado.")
     return disciplinas
+
+@app.post("/notas", status_code=status.HTTP_201_CREATED)
+def cadastrar_nota(nota: nota):
+    nota_criada = db.cadastrar_nota(nota.matricula_id, nota.nota_1, nota.nota_2, nota.nota_3)
+    return {"message": "Nota cadastrada com sucesso.", "nota": nota_criada}
+
+@app.get("/media/{matricula}", response_model=mediaSaida)
+def listar_media(matricula: str):
+    media = db.media_aluno(matricula)
+    if media is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Aluno não encontrado.")
+    return media

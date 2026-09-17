@@ -91,8 +91,7 @@ def criar_tabelas():
     id        SERIAL PRIMARY KEY,
     nome      VARCHAR(100) NOT NULL,
     idade     INTEGER,
-    matricula VARCHAR(20) UNIQUE NOT NULL,
-    media     NUMERIC(4,2) DEFAULT 0
+    matricula VARCHAR(20) UNIQUE NOT NULL
   );
 
     CREATE TABLE IF NOT EXISTS disciplinas (
@@ -113,7 +112,16 @@ def criar_tabelas():
       email VARCHAR(100) NOT NULL UNIQUE,
       senha_hash VARCHAR(72) NOT NULL,
       criado_em TIMESTAMP NOT NULL DEFAULT NOW()
-    );"""
+  );
+    
+    CREATE TABLE IF NOT EXISTS notas (
+    id            SERIAL PRIMARY KEY,
+    matricula_id  INTEGER NOT NULL REFERENCES matriculas(id) ON DELETE CASCADE UNIQUE,
+    nota_1 NUMERIC(4,2) CHECK (nota_1 BETWEEN 0 AND 10),
+    nota_2 NUMERIC(4,2) CHECK (nota_2 BETWEEN 0 AND 10),
+    nota_3 NUMERIC(4,2) CHECK (nota_3 BETWEEN 0 AND 10),
+    media  NUMERIC(4,2) GENERATED ALWAYS AS (ROUND((COALESCE(nota_1, 0) + COALESCE(nota_2, 0) + COALESCE(nota_3, 0)) / 3.0, 2)) STORED
+  );"""
   executar_sql(sql)
 
 # --------------------------------------------------------------------------
@@ -123,9 +131,9 @@ def criar_tabelas():
 #   INSERT na tabela alunos. Dica: use "RETURNING *" para já receber de volta
 #   a linha criada (com o id gerado pelo banco).
 
-def inserir_aluno(nome, idade, matricula, media=0):
-  sql = "INSERT INTO alunos (nome, idade, matricula, media) VALUES (%s, %s, %s, %s) RETURNING id, nome, idade, matricula, media;"
-  aluno_criado = executar_sql(sql, (nome, idade, matricula, media))
+def inserir_aluno(nome, idade, matricula):
+  sql = "INSERT INTO alunos (nome, idade, matricula) VALUES (%s, %s, %s) RETURNING id, nome, idade, matricula;"
+  aluno_criado = executar_sql(sql, (nome, idade, matricula))
   return aluno_criado
 
 #
@@ -133,16 +141,13 @@ def inserir_aluno(nome, idade, matricula, media=0):
 #   SELECT de todos os alunos, ordenados por id.
 #   (Fazer aceitar filtros é o Desafio 1 — comece simples.)
 
-def listar_alunos():
+def listar_alunos(idade=None):
   sql = "SELECT * FROM alunos"
   condicoes = []
   parametros = []
   if idade is not None:
     condicoes.append("idade >= %s")
-    parametros.append(idade)
-  if media is not None:
-    condicoes.append("media >= %s")
-    parametros.append(media)
+    parametros.append(idade)  
   if condicoes:
     sql += " WHERE " + " AND ".join(condicoes)
     
@@ -155,7 +160,7 @@ def listar_alunos():
 
 def buscar_aluno(id):
   sql = "SELECT nome, idade, matricula FROM alunos WHERE id = %s;"       
-  aluno = executar_sql(sql, (id,))
+  aluno = executar_sql(sql, (id,), fetchone=True)
   return aluno
 
 # TODO: atualizar_aluno(id, **campos)
@@ -166,15 +171,13 @@ def atualizar_aluno(
   id: int, 
   nome: Optional[str] = None, 
   idade: Optional[int] = None, 
-  matricula: Optional[str] = None, 
-  media: Optional[float] = None
+  matricula: Optional[str] = None
   ):  
   
   campos_atualizados = {
     "nome": nome,
     "idade": idade,
-    "matricula": matricula,
-    "media": media
+    "matricula": matricula
   }
   
   ## k transforma em nome da coluna, v transforma em valor do campo
@@ -286,3 +289,13 @@ def listar_usuarios():
     sql = "SELECT id, email, criado_em FROM usuarios ORDER BY id ASC"
     lista_usuarios = executar_sql(sql)
     return lista_usuarios
+  
+def cadastrar_nota(matricula_id, nota_1=None, nota_2=None, nota_3=None):
+    sql = "INSERT INTO notas (matricula_id, nota_1, nota_2, nota_3) VALUES (%s, %s, %s, %s) RETURNING *;"
+    nota_criada = executar_sql(sql, (matricula_id, nota_1, nota_2, nota_3))
+    return nota_criada
+
+def media_aluno(matricula):
+    sql = "SELECT a.nome, a.matricula, nota_1, nota_2, nota_3, media FROM notas n join public.matriculas m on n.matricula_id = m.id join alunos a on m.aluno_id = a.id where a.matricula = %s;"
+    media = executar_sql(sql, (matricula,), fetchone=True)
+    return media

@@ -29,7 +29,6 @@ class AlunoEntrada(BaseModel):
     nome: str = Field(min_length=1, max_length=100)
     idade: int = Field(ge=0, le=120)
     matricula: str = Field(min_length=1, max_length=20)
-    media: Optional[float] = Field(default=0, ge=0, le=10)
 #
 # TODO: AlunoAtualizacao  (PATCH) — mesmos campos, mas TODOS Optional (=None),
 #   para o cliente enviar só o que quer mudar. (A matrícula não se altera.)
@@ -37,7 +36,6 @@ class AlunoEntrada(BaseModel):
 class AlunoAtualizacao(BaseModel):
     nome: Optional[str] = Field(min_length=1, max_length=100)
     idade: Optional[int] = Field(ge=0, le=120)
-    media: Optional[float] = Field(default=0, ge=0, le=10)
 #
 # TODO: AlunoSaida  — o que a API devolve, incluindo o id.
 
@@ -46,7 +44,6 @@ class AlunoSaida(BaseModel):
     nome: str
     idade: int
     matricula: str
-    media: float
 
 # --------------------------------------------------------------------------
 # DISCIPLINA  (Desafio 2)
@@ -76,3 +73,15 @@ class LoginOk(BaseModel):
     message: str
     usuario: UsuarioSaida
     
+class nota(BaseModel):
+    matricula_id: int
+    nota_1: Optional[float] = Field(ge=0, le=10)
+    nota_2: Optional[float] = Field(ge=0, le=10)
+    nota_3: Optional[float] = Field(ge=0, le=10)
+    
+class mediaSaida(BaseModel):
+    matricula: str
+    nota_1: Optional[float] = Field(ge=0, le=10)
+    nota_2: Optional[float] = Field(ge=0, le=10)
+    nota_3: Optional[float] = Field(ge=0, le=10)
+    media: float = Field(ge=0, le=10)
